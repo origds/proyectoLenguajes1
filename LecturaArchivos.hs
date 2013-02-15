@@ -110,6 +110,6 @@ main = do
   print ("ATACAR")
   print $ fromJust (atacar 2 ((!!) listaE1hp 1))
   print ("CAMBIAR")
-  print $ cambiar 2 listaE1hp
+  print $ cambiar 1 listaE1hp
  
 
