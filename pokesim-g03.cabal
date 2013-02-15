@@ -46,7 +46,7 @@ executable pokesim
   main-is: LecturaArchivos.hs
   
   -- Modules included in this executable, other than Main.
-  other-modules: Pokemon
+  other-modules: Pokemon, Batalla
   
   -- Other library packages from which modules are imported.
   build-depends:       base ==4.5.*, directory ==1.1.*, split ==0.2.*, QuickCheck ==2.4.*, containers ==0.4.*
