@@ -1,4 +1,4 @@
--- Modulo donde se encuentrar las funciones para la lectura de archivos
+-- Modulo donde se encuentran las funciones para la lectura de archivos
 
 import System.Environment
 import System.IO
@@ -8,8 +8,8 @@ import Data.List
 import Data.List.Split
 import qualified Data.Map as M
 import Data.Maybe
+import Batalla
 import Pokemon
-
 
 crearEspecies :: String -> [Especie]
 crearEspecies csv =  map convertir $ map separar lineas
@@ -56,7 +56,7 @@ crearMonstruos csv listaEspecies listaAtaques = map convertir $ map separar line
       Monstruo {especie = fromJust $ laEspecie (read a)
               ,sobrenombre = b
               ,nivel = read c
-              ,hpactual = 0
+              ,hpactual = 0 -- El pokemon debe inicir la batalla con el maximo hp
               ,ataques = ((fromJust $ elAtaque d , pp $ fromJust $ elAtaque d), 
                           if (e == "") then Nothing else Just (fromJust $ elAtaque e, pp $ fromJust $ elAtaque e ),
                           if (f == "") then Nothing else Just (fromJust $ elAtaque f, pp $ fromJust $ elAtaque f ),
@@ -83,9 +83,13 @@ crearMonstruos csv listaEspecies listaAtaques = map convertir $ map separar line
     
         obtenerEspecie :: Int -> M.Map Int Especie -> Maybe Especie
         obtenerEspecie n mapa = M.lookup n mapa
+        
+asignarHP :: [Monstruo] -> [Monstruo]
+asignarHP listaMons = map hp listaMons
+  where
+    hp :: Monstruo -> Monstruo
+    hp m = m { hpactual = maxHp m }
 
-   
-  
 main :: IO()
 main = do
   [archivoEspecies, archivoAtaques, archivoEntrenador1, archivoEntrenador2] <- getArgs
@@ -95,12 +99,17 @@ main = do
   csvEntrenador1 <- readFile archivoEntrenador1
   print ("ESPECIES")
   let listaEspecies = crearEspecies csvEspecies
-  print $ listaEspecies
+  --print $ listaEspecies
   print ("ATAQUEES")
   let listaAtaques = crearAtaques csvAtaques
-  print $ listaAtaques
+  --print $ listaAtaques
   print ("MONSTRUOS")
   let listaEntrenador1 = crearMonstruos csvEntrenador1 listaEspecies listaAtaques
-  print $ listaEntrenador1
+  let listaE1hp = asignarHP listaEntrenador1
+  print $ listaE1hp
+  print ("ATACAR")
+  print $ fromJust (atacar 2 ((!!) listaE1hp 1))
+  print ("CAMBIAR")
+  print $ cambiar 2 listaE1hp
  
 
