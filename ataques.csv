@@ -1,0 +1,13 @@
+absorb,Grass,False,25,20
+acid,Poison,False,30,40
+acid-spray,Poison,False,20,40
+acrobatics,Flying,True,15,55
+aerial-ace,Flying,True,20,60
+aeroblast,Flying,False,5,100
+air-cutter,Flying,False,25,55
+air-slash,Flying,False,20,75
+ancientpower,Rock,False,5,60
+aqua-jet,Water,True,20,40
+aqua-tail,Water,True,10,90
+arm-thrust,Fighting,True,20,15
+assurance,Dark,True,10,50

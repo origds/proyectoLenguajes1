@@ -1,0 +1,20 @@
+data Relación = Relación { fuertes, débiles, inmunes :: [Tipo] }
+relacionAtaqueTipo :: Type -> Relación
+relacionAtaqueTipo x = case x of
+  Bug      -> Relación [Grass, Psychic, Dark] [Fighting, Flying, Poison, Ghost, Steel, Fire] []
+  Dark     -> Relación [Ghost, Psychic] [Fighting, Steel, Dark] []
+  Dragon   -> Relación [Dragon] [Steel] []
+  Electric -> Relación [Flying, Water] [Grass, Electric, Dragon] [Ground]
+  Fighting -> Relación [Normal, Rock, Steel, Ice, Dark] [Flying, Poison, Bug, Psychic] [Ghost]
+  Fire     -> Relación [Bug, Steel, Grass, Ice] [Rock, Fire, Water, Dragon] []
+  Flying   -> Relación [Fighting, Bug, Grass] [Rock,Steel, Electric] []
+  Ghost    -> Relación [Ghost, Psychic] [Steel, Dark] [Normal]
+  Grass    -> Relación [Ground, Rock, Water] [Flying, Poison, Bug, Steel, Fire, Grass, Dragon] []
+  Ground   -> Relación [Poison, Rock, Steel, Fire, Electric] [Bug, Grass] [Flying]
+  Ice      -> Relación [Flying, Ground, Grass, Dragon] [Steel,Fire, Water] []
+  Normal   -> Relación [] [Rock, Steel] [Ghost]
+  Poison   -> Relación [Grass] [Poison, Ground, Rock, Ghost] [Steel]
+  Psychic  -> Relación [Fighting, Poison] [Steel, Psychic] [Dark]
+  Rock     -> Relación [Flying, Bug, Fire, Ice] [Fighting, Ground, Steel] []
+  Steel    -> Relación [Rock, Ice] [Steel, Fire, Water, Electric] []
+  Water    -> Relación [Ground, Rock, Fire] [Water, Grass, Dragon] []
