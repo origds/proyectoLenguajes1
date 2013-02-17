@@ -115,7 +115,7 @@ main = do
   print ("ATACAR")
   --print $ fromJust (atacar 2 ((!!) listaE1hp 1))
   print ("CAMBIAR")
-  print $ fromJust (cambiar 3 listaE1hp)
+  --print $ fromJust (cambiar 3 listaE1hp)
   print ("INFO")
   info (listaE1hp !! 1) listaE1hp
   print ("AYUDA")
@@ -137,8 +137,4 @@ main = do
   accion1 <- getLine
   putStrLn "Entrenador 1, elige una accion!"
   accion2 <- getLine
-
-  
-  case words accion1 of
-    ["atacar", n] -> atacar n
-    ["cambiar", n] -> fromJust (cambiar n listaEntrenador1)
+  print ("")
