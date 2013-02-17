@@ -3,6 +3,7 @@
 import System.Environment
 import System.IO
 import System.Directory
+import System.Exit (exitSuccess)
 import Control.Monad
 import Data.List
 import Data.List.Split
@@ -93,23 +94,51 @@ asignarHP listaMons = map hp listaMons
 main :: IO()
 main = do
   [archivoEspecies, archivoAtaques, archivoEntrenador1, archivoEntrenador2] <- getArgs
-  args <- getArgs 
   csvEspecies <- readFile archivoEspecies
   csvAtaques <- readFile archivoAtaques
   csvEntrenador1 <- readFile archivoEntrenador1
+  csvEntrenador2 <- readFile archivoEntrenador2
   print ("ESPECIES")
   let listaEspecies = crearEspecies csvEspecies
   --print $ listaEspecies
   print ("ATAQUEES")
   let listaAtaques = crearAtaques csvAtaques
   --print $ listaAtaques
-  print ("MONSTRUOS")
+  print ("MONSTRUOS PARA EL ENTRENADOR 1")
   let listaEntrenador1 = crearMonstruos csvEntrenador1 listaEspecies listaAtaques
   let listaE1hp = asignarHP listaEntrenador1
-  print $ listaE1hp
+  --print $ listaE1hp
+  print ("MONSTRUOS PARA EL ENTRENADOR 2")
+  let listaEntrenador2 = crearMonstruos csvEntrenador2 listaEspecies listaAtaques
+  let listaE2hp = asignarHP listaEntrenador2
+  --print $ listaE2hp
   print ("ATACAR")
-  print $ fromJust (atacar 2 ((!!) listaE1hp 1))
+  --print $ fromJust (atacar 2 ((!!) listaE1hp 1))
   print ("CAMBIAR")
-  print $ cambiar 1 listaE1hp
- 
+  --print $ cambiar 1 listaE1hp
 
+
+--Flujo de la Batalla
+
+
+  --Se seleccionan los dos primeros monstruos pasados en los archivos para
+  --cada entrenador.
+  let monstruoAct2 = fromJust (cambiar 0 listaEntrenador2)
+  let monstruoAct1 = fromJust (cambiar 0 listaEntrenador1)
+
+  let velAct1 = actualVel monstruoAct1
+  let velAct2 = actualVel monstruoAct2
+  let maxVel = max velAct1 velAct2
+
+  putStrLn "Entrenador 1, elige una accion!"
+  accion1 <- getLine
+  putStrLn "Entrenador 1, elige una accion!"
+  accion2 <- getLine
+
+  
+  case words accion1 of
+    ["atacar", n] -> atacar n
+    ["cambiar", n] -> fromJust (cambiar n listaEntrenador1)
+    --["info", "yo"] -> info "yo"
+    --["info", "rival"] -> info "rival"
+    --["ayuda", monstruo] -> ayuda monstruoAct1
