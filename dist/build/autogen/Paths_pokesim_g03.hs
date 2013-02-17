@@ -15,10 +15,10 @@ version :: Version
 version = Version {versionBranch = [0,1,0,0], versionTags = []}
 bindir, libdir, datadir, libexecdir :: FilePath
 
-bindir     = "/home/origds/.cabal/bin"
-libdir     = "/home/origds/.cabal/lib/pokesim-g03-0.1.0.0/ghc-7.4.1"
-datadir    = "/home/origds/.cabal/share/pokesim-g03-0.1.0.0"
-libexecdir = "/home/origds/.cabal/libexec"
+bindir     = "/home/carla/.cabal/bin"
+libdir     = "/home/carla/.cabal/lib/pokesim-g03-0.1.0.0/ghc-7.4.2"
+datadir    = "/home/carla/.cabal/share/pokesim-g03-0.1.0.0"
+libexecdir = "/home/carla/.cabal/libexec"
 
 getBinDir, getLibDir, getDataDir, getLibexecDir :: IO FilePath
 getBinDir = catchIO (getEnv "pokesim_g03_bindir") (\_ -> return bindir)

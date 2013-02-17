@@ -7,12 +7,12 @@
   (major1) == 2 && (major2) <  4 || \
   (major1) == 2 && (major2) == 4 && (minor) <= 2)
 
-/* package base-4.5.0.0 */
-#define VERSION_base "4.5.0.0"
+/* package base-4.5.1.0 */
+#define VERSION_base "4.5.1.0"
 #define MIN_VERSION_base(major1,major2,minor) (\
   (major1) <  4 || \
   (major1) == 4 && (major2) <  5 || \
-  (major1) == 4 && (major2) == 5 && (minor) <= 0)
+  (major1) == 4 && (major2) == 5 && (minor) <= 1)
 
 /* package containers-0.4.2.1 */
 #define VERSION_containers "0.4.2.1"
