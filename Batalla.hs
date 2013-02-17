@@ -25,10 +25,10 @@ nuevoHp defensor daño =
                                                                 else (hpactual defensor) - (floor daño)}
 
 -- Funcion que verifica que un pokemon este inconsciente
-inconsciente :: Monstruo -> IO()
+inconsciente :: Monstruo -> Bool
 inconsciente mons
-  | (hpactual mons) == 0 = putStrLn ("El pokemon ha quedado inconsciente debes cambiarlo")
-  | otherwise = putStrLn ("El ataque no fue tan efectivo")
+  | (hpactual mons) == 0 = True
+  | otherwise = False
 
 -- Funcion para cambiar de monstruo en la batalla
 
@@ -139,13 +139,13 @@ imprimirMonstruos n lista
 
 printAtaque :: Int ->  [(Ataque,Int)]-> IO()
 printAtaque n lista = do
-  putStrLn ("Ataque " ++ show (n+1) ++ ": " ++ show (fst (lista !! n)) ++ ". PP actual: " ++ show (snd (lista !! n)))
+  putStrLn ("Ataque " ++ show (n+1) ++ ": " ++ nombreAt (fst (lista !! n)) ++ ". PP actual: " ++ show (snd (lista !! n)))
   putStrLn ""
   
 printMonstruo :: Int -> [Monstruo] -> IO()
 printMonstruo n lista = do
-  putStrLn $ "Pokemon " ++ show (n+1) ++ ": " ++ show (lista !! n)
+  putStrLn $ "Pokemon " ++ show (n+1) ++ "-> " ++ "Especie: " ++ nombreEsp (especie (lista !! n)) ++ ". Sobrenombre: " ++ sobrenombre (lista !! n) ++ ". HP actual: " ++ show (hpactual (lista !! n))
   putStrLn ""
   
 printError :: Int -> IO()
-printError n = putStrLn $ "El pokemon " ++ show (n+1) ++ " esta desmayado"
+printError n = putStrLn $ "El pokemon " ++ show (n+1) ++ " esta inconsciente"
