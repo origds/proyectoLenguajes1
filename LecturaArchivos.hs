@@ -106,9 +106,12 @@ main = do
   print ("MONSTRUOS")
   let listaEntrenador1 = crearMonstruos csvEntrenador1 listaEspecies listaAtaques
   let listaE1hp = asignarHP listaEntrenador1
-  print $ listaE1hp
+  --print $ listaE1hp
   print ("ATACAR")
   print $ fromJust (atacar 2 ((!!) listaE1hp 1))
   print ("CAMBIAR")
-  print $ fromJust (cambiar 1 listaE1hp)
-
+  print $ fromJust (cambiar 3 listaE1hp)
+  print ("INFO")
+  info (listaE1hp !! 1) listaE1hp
+  print ("AYUDA")
+  ayuda (fromJust (cambiar 5 listaE1hp)) listaE1hp
