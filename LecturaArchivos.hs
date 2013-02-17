@@ -1,5 +1,4 @@
 -- Modulo donde se encuentran las funciones para la lectura de archivos
-
 import System.Environment
 import System.IO
 import System.Directory
@@ -98,12 +97,17 @@ main = do
   csvAtaques <- readFile archivoAtaques
   csvEntrenador1 <- readFile archivoEntrenador1
   csvEntrenador2 <- readFile archivoEntrenador2
+  putStr "" 
+
   print ("ESPECIES")
   let listaEspecies = crearEspecies csvEspecies
   --print $ listaEspecies
   print ("ATAQUEES")
   let listaAtaques = crearAtaques csvAtaques
   --print $ listaAtaques
+  
+
+
   print ("MONSTRUOS PARA EL ENTRENADOR 1")
   let listaEntrenador1 = crearMonstruos csvEntrenador1 listaEspecies listaAtaques
   let listaE1hp = asignarHP listaEntrenador1
@@ -115,30 +119,145 @@ main = do
   print ("ATACAR")
   --print $ fromJust (atacar 2 ((!!) listaE1hp 1))
   print ("CAMBIAR")
-  print $ fromJust (cambiar 1 listaE1hp)
+  --print $ fromJust (cambiar 1 listaE1hp)
 
 
---Flujo de la Batalla
-
-
+  --Valores iniciales de la batalla
   --Se seleccionan los dos primeros monstruos pasados en los archivos para
   --cada entrenador.
-  let monstruoAct2 = fromJust (cambiar 0 listaEntrenador2)
-  let monstruoAct1 = fromJust (cambiar 0 listaEntrenador1)
+  let monstruoAct1 = fromJust (cambiar 0 listaE1hp)
+  let monstruoAct2 = fromJust (cambiar 0 listaE2hp)
 
-  let velAct1 = actualVel monstruoAct1
-  let velAct2 = actualVel monstruoAct2
-  let maxVel = max velAct1 velAct2
+  batalla monstruoAct1 monstruoAct2 listaE1hp listaE2hp
+  print("")
 
+turnoEntrenador1 :: IO(String)
+turnoEntrenador1 = do 
   putStrLn "Entrenador 1, elige una accion!"
   accion1 <- getLine
-  putStrLn "Entrenador 1, elige una accion!"
-  accion2 <- getLine
+  print("")
 
-  
-  case words accion1 of
-    ["atacar", n] -> atacar n
-    ["cambiar", n] -> fromJust (cambiar n listaEntrenador1)
-    --["info", "yo"] -> info "yo"
-    --["info", "rival"] -> info "rival"
-    --["ayuda", monstruo] -> ayuda monstruoAct1
+turnoEntrenador2 :: IO(String)
+turnoEntrenador2 = do 
+  putStrLn "Entrenador 2, elige una accion!"
+  accion2 <- getLine
+  print("")
+
+--Flujo de la Batalla
+batalla :: Monstruo -> Monstruo -> [Monstruo] -> [Monstruo] -> IO String -> IO String-> IO()
+batalla monstruoAct1 monstruoAct2 listaE1hp listaE2hp accion1 accion2 = do
+
+  let acciones = accion1 ++ " " accion2
+
+  case words acciones of
+    --Si ambos entrenadores solicitan un cambio
+    --se realiza el cambio y se continua al siguiente
+    --turno
+    ["cambiar", n, "cambiar", m] -> do
+      if inconsciente (fromJust (cambiar (read n) listaE1hp))
+        then do putStrLn "El pokemon esta inconsciente!. Debes elegir otro, Entrenador 1!"
+                batalla monstruoAct1 monstruoAct2 listaE1hp listaE2hp turnoEntrenador1 accion2
+        else print (fromJust (cambiar (read n) listaE1hp))
+      
+      if inconsciente (fromJust (cambiar (read m) listaE2hp))
+        then do putStrLn "El pokemon esta inconsciente!. Debes elegir otro, Entrenador 2!"
+                batalla monstruoAct1 monstruoAct2 listaE1hp listaE2hp accion1 turnoEntrenador2
+        else print (fromJust (cambiar (read m) listaE2hp))
+      
+      batalla monstruoAct1 monstruoAct2 listaE1hp listaE2hp turnoEntrenador1 turnoEntrenador2
+    
+    --Si alguno de los dos entrenadores solicita un cambio
+    --el mismmo se realiza y luego se realiza el ataque.
+    ["cambiar", n, "atacar", m] -> do
+
+      let a = atacar (read m) monstruoAct2
+      --Si el ataque retorna Nothing, se muestra un mensaje indicando que
+      --ese ataque ya no puede ser usado. Si no, se realiza el cambio realizado
+      --por el entrenador 1 y Se calcula el dano realizado
+      --al pokemon defensor y se verifica que el mismo no haya quedado inconsiente
+      if (isNothing a) 
+        then do putStrLn "No tienes PP para este ataque!. Debes elegir otro ataque, Entrenador 2!"
+                batalla monstruoAct1 monstruoAct2 listaE1hp listaE2hp accion1 turnoEntrenador2    
+        else  do 
+          if inconsciente (fromJust (cambiar (read n) listaE1hp))
+            then do putStrLn "El pokemon esta inconsciente!. Debes elegir otro, Entrenador 1!"
+                    batalla monstruoAct1 monstruoAct2 listaE1hp listaE2hp turnoEntrenador1 accion2
+            else print (fromJust (cambiar (read n) listaE1hp))
+          
+          let daño = dañoAtaque monstruoAct2 monstruoAct1 fromJust(a)
+          let monstruoAct1 = nuevoHp monstruoAct1 daño
+          --Si el pokemon quedo inconsciente el entrenador 1 debe realizar un 
+          --cambio para continua con la batalla, si no continuo el flujo norma
+          --del juego
+          if inconsciente monstruoAct1
+            then do 
+              putStrLn "El pokemon esta inconsciente!. Debes cambiarlo, Entrenador 1"
+              batalla monstruoAct1 monstruoAct2 listaE1hp listaE2hp turnoEntrenador1 turnoEntrenador2 
+            else 
+              batalla monstruoAct1 monstruoAct2 listaE1hp listaE2hp turnoEntrenador1 turnoEntrenador2
+    
+      --Si alguno de los dos entrenadores solicita un cambio
+      --el mismmo se realiza y luego se realiza el ataque.
+    ["atacar", n, "cambiar", m] -> do
+
+      let a = atacar (read n) monstruoAct1
+      --Si el ataque retorna Nothing, se muestra un mensaje indicando que
+      --ese ataque ya no puede ser usado. Si no, se realiza el cambio realizado
+      --por el entrenador 1 y Se calcula el dano realizado
+      --al pokemon defensor y se verifica que el mismo no haya quedado inconsiente
+      if (isNothing a) 
+        then do putStrLn "No tienes PP para este ataque!. Debes elegir otro ataque, Entrenador 1"
+                batalla monstruoAct1 monstruoAct2 listaE1hp listaE2hp turnoEntrenador1 accion2
+        else  do 
+          if inconsciente (fromJust (cambiar (read m) listaE2hp))
+            then do putStrLn "El pokemon esta inconsciente!. Debes elegir otro, Entrenador 2!"
+                    batalla monstruoAct1 monstruoAct2 listaE1hp listaE2hp accion1 turnoEntrenador2
+            else print (fromJust (cambiar (read m) listaE2hp))
+          
+          let daño = dañoAtaque monstruoAct1 monstruoAct2 fromJust(a)
+          let monstruoAct2 = nuevoHp monstruoAct2 daño
+          --Si el pokemon quedo inconsciente el entrenador 1 debe realizar un 
+          --cambio para continua con la batalla, si no continuo el flujo norma
+          --del juego
+          if inconsciente monstruoAct2
+            then do 
+              putStrLn "El pokemon esta inconsciente!. Debes cambiarlo, Entrenador 2!"
+              batalla monstruoAct1 monstruoAct2 listaE1hp listaE2hp turnoEntrenador1 turnoEntrenador2 
+            else 
+              batalla monstruoAct1 monstruoAct2 listaE1hp listaE2hp turnoEntrenador1 turnoEntrenador2
+
+---Esto es lo que debe pasar si ambos entrenadores atacan!
+
+  --let velAct1 = actualVel monstruoAct1
+  --let velAct2 = actualVel monstruoAct2
+  --let maxVel = max velAct1 velAct2
+
+  --putStrLn "Entrenador 1, elige una accion!"
+  --accion1 <- getLine
+  --putStrLn "Entrenador 2, elige una accion!"
+  --accion2 <- getLine
+
+  ----Se verifica cual pokemon tiene mayor velocidad para determinar
+  ----quien realiza su accion primero
+  --if (maxVel == velAct1) 
+  --  then
+  --    case words accion1 of
+  --      ["atacar", n] -> print (fromJust (atacar (read n) monstruoAct1))
+  --      ["cambiar", n] -> print (fromJust (cambiar (read n) listaE1hp))
+  --      --["info", "yo"] -> info listaEntrenador1 "yo" 
+  --      --["info", "rival"] -> info listaEntrenador2 "rival"
+  --      ["ayuda"] -> do ayuda monstruoAct1
+  --                  batalla monstruoAct1 monstruoAct2 listaE1hp listaE2hp
+  --      _ -> do putStrLn ("Say what!?")
+  --              batalla monstruoAct1 monstruoAct2 listaE1hp listaE2hp
+  --else if (maxVel == velAct2) 
+  --  then
+  --    case words accion1 of
+  --      ["atacar", n] -> print (fromJust (atacar (read n) monstruoAct2))
+  --      ["cambiar", n] -> print (fromJust (cambiar (read n) listaE2hp))
+  --      --["info", "yo"] -> info listaEntrenador1 "yo"
+  --      --["info", "rival"] -> info listaEntrenador2 "rival"
+  --      ["ayuda"] -> ayuda monstruoAct1
+  --      _ -> putStrLn ("Say what!?")
+  --else putStr "SHUT THE FUCK OFF."
+
