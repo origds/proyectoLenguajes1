@@ -42,7 +42,7 @@ cambiar n lista
 -- Funcion para obtener informacion de un monstruo 
 
 info :: Monstruo -> String
-info monstruo = "POKEMON ATCTUAL \n\n" ++ imprimirInfo monstruo
+info monstruo = "POKEMON ACTUAL \n\n" ++ imprimirInfo monstruo
 
 -- Funcion para obtener la lista de ataques y la lista de monstruos
 
@@ -50,6 +50,16 @@ ayuda :: Monstruo -> [Monstruo] -> String
 ayuda mons listaM = unlines
   [ "LISTA DE ATAQUES", "", imprimirAtaques (listarAtaque (ataques mons))
   ,"LISTA DE MONSTRUOS", "", imprimirMonstruos listaM ]
+
+-- Funcion para asignar el pokemon actual al entrenador 
+
+actualPokemon :: Entrenador -> Monstruo -> Entrenador
+actualPokemon ent pok = ent { pokemon = pok }
+
+-- Funcion para rendirse
+
+rendirse :: Entrenador -> Entrenador
+rendirse ent = ent { rendido = True }
 
 -- Funciones auxiliares para impresion
 
