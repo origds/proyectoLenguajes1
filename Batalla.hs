@@ -2,6 +2,7 @@
 
 module Batalla where 
 
+import Control.Monad
 import Data.Data
 import Data.List
 import qualified Data.Map as M
@@ -25,6 +26,7 @@ nuevoHp defensor daño =
                                                                 else (hpactual defensor) - (floor daño)}
 
 -- Funcion que verifica que un pokemon este inconsciente
+
 inconsciente :: Monstruo -> Bool
 inconsciente mons
   | (hpactual mons) == 0 = True
@@ -39,113 +41,51 @@ cambiar n lista
   
 -- Funcion para obtener informacion de un monstruo 
 
-info :: Monstruo -> [Monstruo] -> IO()
-info monstruo listaEntrenador = imprimirInfo monstruo
+info :: Monstruo -> String
+info monstruo = "POKEMON ATCTUAL \n\n" ++ imprimirInfo monstruo
 
 -- Funcion para obtener la lista de ataques y la lista de monstruos
 
-ayuda :: Monstruo -> [Monstruo] -> IO()
-ayuda mons listaM = do
-  putStrLn ("LISTA DE ATAQUES")
-  let listaA = listarAtaque (ataques mons)
-  let tamañoA = length listaA
-  imprimirAtaques tamañoA listaA
-  putStrLn ("LISTA DE MONSTRUOS")
-  let tamañoM = length listaM
-  imprimirMonstruos tamañoM listaM
+ayuda :: Monstruo -> [Monstruo] -> String
+ayuda mons listaM = unlines
+  [ "LISTA DE ATAQUES", "", imprimirAtaques (listarAtaque (ataques mons))
+  ,"LISTA DE MONSTRUOS", "", imprimirMonstruos listaM ]
 
 -- Funciones auxiliares para impresion
 
-imprimirInfo :: Monstruo -> IO()
-imprimirInfo mons = do
-  putStrLn ("Especie: " ++ show (especie mons))
-  putStrLn ""
-  putStrLn ("Sobrenombre: " ++ (sobrenombre mons))
-  putStrLn ""
-  putStrLn ("Nivel: " ++ show (nivel mons))
-  putStrLn ""
-  putStrLn ("HP actual: " ++ show (hpactual mons))
-  putStrLn ""
-  putStrLn ("Ataques: " ++ show (listarAtaque (ataques mons)))
-  putStrLn ""
+imprimirInfo :: Monstruo -> String
+imprimirInfo mons = unlines
+ [ "Especie: " ++ show (especie mons), ""
+ , "Sobrenombre: " ++ (sobrenombre mons), ""
+ , "Nivel: " ++ show (nivel mons), ""
+ , "HP actual: " ++ show (hpactual mons), ""
+ , "Ataques: " ++ show (listarAtaque (ataques mons)) ]
   
-imprimirAtaques :: Int -> [(Ataque,Int)]-> IO()
-imprimirAtaques n lista
-  | n == 1 = do
-      printAtaque 0 lista
-  | n == 2 = do
-      printAtaque 0 lista
-      printAtaque 1 lista
-  | n == 3 = do
-      printAtaque 0 lista
-      printAtaque 1 lista
-      printAtaque 2 lista
-  | otherwise = do
-      printAtaque 0 lista
-      printAtaque 1 lista
-      printAtaque 2 lista
-      printAtaque 3 lista
+imprimirAtaques :: [(Ataque, Int)] -> String
+imprimirAtaques lista = unlines . intersperse "" $ zipWith printAtaque [0..] lista
       
-imprimirMonstruos :: Int -> [Monstruo]-> IO()
-imprimirMonstruos n lista
-  | n == 1 =
-      if (hpactual (lista !! 0)) /= 0 then printMonstruo 0 lista
-                                      else printError 0
-  | n == 2 = do
-      if (hpactual (lista !! 0)) /= 0 then printMonstruo 0 lista
-                                      else printError 0
-      if (hpactual (lista !! 1)) /= 0 then printMonstruo 1 lista
-                                      else printError 1
-  | n == 3 = do
-      if (hpactual (lista !! 0)) /= 0 then printMonstruo 0 lista
-                                      else printError 0
-      if (hpactual (lista !! 1)) /= 0 then printMonstruo 1 lista
-                                      else printError 1
-      if (hpactual (lista !! 2)) /= 0 then printMonstruo 2 lista
-                                      else printError 2
-  | n == 4 = do
-      if (hpactual (lista !! 0)) /= 0 then printMonstruo 0 lista
-                                      else printError 0
-      if (hpactual (lista !! 1)) /= 0 then printMonstruo 1 lista
-                                      else printError 1
-      if (hpactual (lista !! 2)) /= 0 then printMonstruo 2 lista
-                                      else printError 2
-      if (hpactual (lista !! 2)) /= 0 then printMonstruo 3 lista
-                                      else printError 3
-  | n == 5 = do
-      if (hpactual (lista !! 0)) /= 0 then printMonstruo 0 lista
-                                      else printError 0
-      if (hpactual (lista !! 1)) /= 0 then printMonstruo 1 lista
-                                      else printError 1
-      if (hpactual (lista !! 2)) /= 0 then printMonstruo 2 lista
-                                      else printError 2
-      if (hpactual (lista !! 2)) /= 0 then printMonstruo 3 lista
-                                      else printError 3
-      if (hpactual (lista !! 2)) /= 0 then printMonstruo 4 lista
-                                      else printError 4
- | otherwise = do
-      if (hpactual (lista !! 0)) /= 0 then printMonstruo 0 lista
-                                      else printError 0
-      if (hpactual (lista !! 1)) /= 0 then printMonstruo 1 lista
-                                      else printError 1
-      if (hpactual (lista !! 0)) /= 0 then printMonstruo 2 lista
-                                      else printError 2
-      if (hpactual (lista !! 1)) /= 0 then printMonstruo 3 lista
-                                      else printError 3
-      if (hpactual (lista !! 2)) /= 0 then printMonstruo 4 lista
-                                      else printError 4
-      if (hpactual (lista !! 2)) /= 0 then printMonstruo 5 lista
-                                      else printError 5
-
-printAtaque :: Int ->  [(Ataque,Int)]-> IO()
-printAtaque n lista = do
-  putStrLn ("Ataque " ++ show (n+1) ++ ": " ++ nombreAt (fst (lista !! n)) ++ ". PP actual: " ++ show (snd (lista !! n)))
-  putStrLn ""
+imprimirMonstruos :: [Monstruo] -> String
+imprimirMonstruos lista = concat . intersperse "" $ zipWith funcion [0..] lista
+  where
+    funcion :: Int -> Monstruo -> String
+    funcion n monstruo = 
+      if (hpactual monstruo) /= 0 then printMonstruo n monstruo
+                                  else printError n  
+       
+printAtaque :: Int -> (Ataque,Int) -> String
+printAtaque n (p,s) = "Ataque " ++ show (n+1) 
+                      ++ ": " ++ nombreAt p 
+                      ++ ". PP actual: " ++ show s
   
-printMonstruo :: Int -> [Monstruo] -> IO()
-printMonstruo n lista = do
-  putStrLn $ "Pokemon " ++ show (n+1) ++ "-> " ++ "Especie: " ++ nombreEsp (especie (lista !! n)) ++ ". Sobrenombre: " ++ sobrenombre (lista !! n) ++ ". HP actual: " ++ show (hpactual (lista !! n))
-  putStrLn ""
+printMonstruo :: Int -> Monstruo -> String
+printMonstruo n mons = 
+  "Pokemon " ++ show (n+1)
+  ++ " -> Especie: " ++ nombreEsp (especie mons) 
+  ++ ". Sobrenombre: " ++ sobrenombre mons
+  ++ ". HP actual: " ++ show (hpactual mons)
+  ++ "\n\n"
   
-printError :: Int -> IO()
-printError n = putStrLn $ "El pokemon " ++ show (n+1) ++ " esta inconsciente"
+printError :: Int -> String
+printError n = "El pokemon " ++ show (n+1) 
+               ++ " esta inconsciente"
+               ++ "\n\n"
