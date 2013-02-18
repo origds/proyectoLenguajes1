@@ -96,6 +96,12 @@ data Monstruo = Monstruo  {
 }
   deriving (Eq, Read, Show)
 
+data Entrenador = Entrenador {
+  pokemon :: Monstruo,
+  listaPokemones :: [Monstruo],
+  rendido :: Bool
+}
+  deriving (Eq, Read, Show)
 
 --Funciones base a definir para obtener las estadisticas actuales
 
