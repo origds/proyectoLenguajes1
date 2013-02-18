@@ -102,8 +102,8 @@ turnoEntrenador2 = do
   putStrLn "Entrenador 2, elige una accion!" 
   getLine
 
-batalla :: Monstruo -> Monstruo -> [Monstruo] -> [Monstruo] -> IO(String) -> IO(String)-> IO()
-batalla monstruoAct1 monstruoAct2 listaE1hp listaE2hp a1 a2 = do
+batalla :: Entrenador -> Entrenador -> IO(String) -> IO(String)-> IO()
+batalla entrenador1 entrenador2 a1 a2 = do
 
   accion1 <- a1
   accion2 <- a2
@@ -113,86 +113,101 @@ batalla monstruoAct1 monstruoAct2 listaE1hp listaE2hp a1 a2 = do
     --Si ambos entrenadores solicitan un cambio
     --se realiza el cambio y se continua al siguiente turno
     ["cambiar", n, "cambiar", m] -> do
-      if inconsciente (fromJust (cambiar (read n) listaE1hp))
+      if inconsciente $ fromJust $ cambiar (read n) (listaPokemones entrenador1)
         then do putStrLn "El pokemon esta inconsciente!. Debes elegir otro, Entrenador 1!"
-                batalla monstruoAct1 monstruoAct2 listaE1hp listaE2hp turnoEntrenador1 a2
+                batalla entrenador1 entrenador2 turnoEntrenador1 a2
         else do
-          let monstruoActCambiado1 = fromJust (cambiar (read n) listaE1hp) 
-          if inconsciente (fromJust (cambiar (read m) listaE2hp))
+          let monstruoCambiado1 = fromJust $ cambiar (read n) (listaPokemones entrenador1)
+          let entrenador1Modif = actualPokemon entrenador1 monstruoCambiado1
+          
+          if inconsciente $ fromJust $ cambiar (read m) (listaPokemones entrenador2)
             then do putStrLn "El pokemon esta inconsciente!. Debes elegir otro, Entrenador 2!"
-                    batalla monstruoAct1 monstruoAct2 listaE1hp listaE2hp a1 turnoEntrenador2
+                    batalla entrenador1 entrenador2 a1 turnoEntrenador2
             else do
-              let monstruoActCambiado2 = fromJust (cambiar (read m) listaE2hp)
-              batalla monstruoActCambiado1 monstruoActCambiado2 listaE1hp listaE2hp turnoEntrenador1 turnoEntrenador2
+              let monstruoCambiado2 = fromJust (cambiar (read m) listaE2hp)
+              let entrenador2Modif = actualPokemon entrenador2 monstruoCambiado2
+              batalla entrenador1Modif entrenador2Modif turnoEntrenador1 turnoEntrenador2
     
     --Si alguno de los dos entrenadores solicita un cambio
     --el mismmo se realiza y luego se realiza el ataque.
     ["cambiar", n, "atacar", m] -> do
 
-      let a = atacar (read m) monstruoAct2
-      --Si el ataque retorna Nothing, se muestra un mensaje indicando que
-      --ese ataque ya no puede ser usado. Si no, se realiza el cambio realizado
-      --por el entrenador 1 y Se calcula el dano realizado
-      --al pokemon defensor y se verifica que el mismo no haya quedado inconsiente
-      if (isNothing a) 
-        then do putStrLn "No tienes PP para este ataque!. Debes elegir otro ataque, Entrenador 2!"
-                batalla monstruoAct1 monstruoAct2 listaE1hp listaE2hp a1 turnoEntrenador2    
-        else  do 
-          if inconsciente (fromJust (cambiar (read n) listaE1hp))
-            then do putStrLn "El pokemon esta inconsciente!. Debes elegir otro, Entrenador 1!"
-                    batalla monstruoAct1 monstruoAct2 listaE1hp listaE2hp turnoEntrenador1 a2
-            else do
-              let monstruoActCambiado = fromJust (cambiar (read m) listaE1hp)
-              let daño = dañoAtaque monstruoAct2 monstruoActCambiado (fromJust(a))
-              let monstruo1NuevoHp = nuevoHp monstruoActCambiado daño
-      
-          --Si el pokemon quedo inconsciente el entrenador 1 debe realizar un 
-          --cambio para continua con la batalla, si no continuo el flujo norma
-          --del juego
-              if inconsciente monstruo1NuevoHp
-                then do 
-                  putStrLn "El pokemon esta inconsciente!. Debes cambiarlo, Entrenador 1"
-                  batalla monstruo1NuevoHp monstruoAct2 listaE1hp listaE2hp turnoEntrenador1 turnoEntrenador2 
-                else 
-                  batalla monstruo1NuevoHp monstruoAct2 listaE1hp listaE2hp turnoEntrenador1 turnoEntrenador2
-    
+      if inconsciente $ pokemon entrenador2
+        then do
+          putStrLn "El pokemon esta inconsciente! Debes cambiarlo, Entrenador 2!" 
+          batalla entrenador1 entrenador2 a1 turnoEntrenador2
+        else do 
+          let a = atacar (read m) (pokemon entrenador2)
+          if (isNothing a) 
+            then do putStrLn "No tienes PP para este ataque!. Debes elegir otro ataque, Entrenador 2!"
+                    batalla entrenador1 entrenador2 a1 turnoEntrenador2    
+            else  do 
+              if inconsciente $ fromJust $ cambiar (read n) (listaPokemones entrenador1)
+                then do putStrLn "El pokemon esta inconsciente!. Debes elegir otro, Entrenador 1!"
+                        batalla entrenador1 entrenador2 turnoEntrenador1 a2
+                else do
+                  let monstruoCambiado = fromJust $ cambiar (read n) (listaPokemones entrenador1)
+                  let entrenador1Modif = actualPokemon entrenador1 monstruoCambiado
+                  let daño = dañoAtaque (pokemon entrenador2) (pokemon entrenador1Modif) (fromJust(a))
+                  let monstruo1NuevoHp = nuevoHp (pokemon entrenador1Modif) daño
+                  let entrenador1Atacado = actualPokemon entrenador1Modif monstruo1NuevoHp
+                  if inconsciente $ pokemon entrenador1Atacado
+                    then do 
+                      putStrLn "El pokemon esta inconsciente!. Debes cambiarlo, Entrenador 1"
+                      batalla entrenador1Atacado entrenador2 turnoEntrenador1 turnoEntrenador2 
+                    else 
+                      batalla entrenador1Atacado entrenador2 turnoEntrenador1 turnoEntrenador2
+          
       --Si alguno de los dos entrenadores solicita un cambio
       --el mismmo se realiza y luego se realiza el ataque.
     ["atacar", n, "cambiar", m] -> do
 
-      let a = atacar (read n) monstruoAct1
-      --Si el ataque retorna Nothing, se muestra un mensaje indicando que
-      --ese ataque ya no puede ser usado. Si no, se realiza el cambio realizado
-      --por el entrenador 1 y Se calcula el dano realizado
-      --al pokemon defensor y se verifica que el mismo no haya quedado inconsiente
-      if (isNothing a) 
-        then do putStrLn "No tienes PP para este ataque!. Debes elegir otro ataque, Entrenador 1"
-                batalla monstruoAct1 monstruoAct2 listaE1hp listaE2hp turnoEntrenador1 a2
-        else  do 
-          if inconsciente (fromJust (cambiar (read m) listaE2hp))
-            then do putStrLn "El pokemon esta inconsciente!. Debes elegir otro, Entrenador 2!"
-                    batalla monstruoAct1 monstruoAct2 listaE1hp listaE2hp a1 turnoEntrenador2
-            else do
-              let monstruoActCambiado = fromJust (cambiar (read m) listaE2hp)
-              let daño = dañoAtaque monstruoAct1 monstruoActCambiado (fromJust(a))
-              print "DANO!!!!"
-              print daño
-              let monstruo2NuevoHp = nuevoHp monstruoActCambiado daño
-          --Si el pokemon quedo inconsciente el entrenador 1 debe realizar un 
-          --cambio para continua con la batalla, si no continuo el flujo norma
-          --del juego
-              if inconsciente monstruo2NuevoHp
-                then do 
-                  putStrLn "El pokemon esta inconsciente!. Debes cambiarlo, Entrenador 2!"
-                  batalla monstruoAct1 monstruo2NuevoHp listaE1hp listaE2hp turnoEntrenador1 turnoEntrenador2 
-                else 
-                  batalla monstruoAct1 monstruo2NuevoHp listaE1hp listaE2hp turnoEntrenador1 turnoEntrenador2
+       if inconsciente monstruoAct1
+        then do
+          putStrLn "El pokemon esta inconsciente! Debes cambiarlo, Entrenador 1!"
+          batalla monstruoAct1 monstruoAct2 listaE1hp listaE2hp turnoEntrenador1 a2
+        else do
+          let a = atacar (read n) monstruoAct1
+          --Si el ataque retorna Nothing, se muestra un mensaje indicando que
+          --ese ataque ya no puede ser usado. Si no, se realiza el cambio realizado
+          --por el entrenador 1 y Se calcula el dano realizado
+          --al pokemon defensor y se verifica que el mismo no haya quedado inconsiente
+          if (isNothing a) 
+            then do putStrLn "No tienes PP para este ataque!. Debes elegir otro ataque, Entrenador 1"
+                    batalla monstruoAct1 monstruoAct2 listaE1hp listaE2hp turnoEntrenador1 a2
+            else  do 
+              if inconsciente (fromJust (cambiar (read m) listaE2hp))
+                then do putStrLn "El pokemon esta inconsciente!. Debes elegir otro, Entrenador 2!"
+                        batalla monstruoAct1 monstruoAct2 listaE1hp listaE2hp a1 turnoEntrenador2
+                else do
+                  let monstruoActCambiado = fromJust (cambiar (read m) listaE2hp)
+                  let daño = dañoAtaque monstruoAct1 monstruoActCambiado (fromJust(a))
+                  print "DANO!!!!"
+                  print daño
+                  let monstruo2NuevoHp = nuevoHp monstruoActCambiado daño
+              --Si el pokemon quedo inconsciente el entrenador 1 debe realizar un 
+              --cambio para continua con la batalla, si no continuo el flujo norma
+              --del juego
+                  if inconsciente monstruo2NuevoHp
+                    then do 
+                      putStrLn "El pokemon esta inconsciente!. Debes cambiarlo, Entrenador 2!"
+                      batalla monstruoAct1 monstruo2NuevoHp listaE1hp listaE2hp turnoEntrenador1 turnoEntrenador2 
+                    else 
+                      batalla monstruoAct1 monstruo2NuevoHp listaE1hp listaE2hp turnoEntrenador1 turnoEntrenador2
 
     ["info", "yo", "info", "yo"] -> do 
       putStrLn $ info monstruoAct1
       putStrLn $ info monstruoAct2
       batalla monstruoAct1 monstruoAct2 listaE1hp listaE2hp turnoEntrenador1 turnoEntrenador2
-
+    
+    ["atacar",n,"atacar",m] -> do
+      if inconsciente monstruoAct1
+        then do
+          putStrLn "El pokemon esta inconsciente! Debes cambiarlo, Entrenador 1!"
+          batalla monstruoAct1 monstruoAct2 listaE1hp listaE2hp turnoEntrenador1 a2
+        else do
+          if inconsciente 
+          let a = atacar (read n) monstruoAct1
 --Esto es lo que debe pasar si ambos entrenadores atacan!
 
   --let velAct1 = actualVel monstruoAct1
@@ -235,24 +250,12 @@ main = do
   csvAtaques <- readFile archivoAtaques
   csvEntrenador1 <- readFile archivoEntrenador1
   csvEntrenador2 <- readFile archivoEntrenador2
-  --print ("ESPECIES")
-  let listaEspecies = crearEspecies csvEspecies
-  --print $ listaEspecies
-  --print ("ATAQUEES")
-  let listaAtaques = crearAtaques csvAtaques
-  --print $ listaAtaques
-  --print ("MONSTRUOS PARA EL ENTRENADOR 1")
-  let listaEntrenador1 = crearMonstruos csvEntrenador1 listaEspecies listaAtaques
-  let listaE1hp = asignarHP listaEntrenador1
-  --print $ listaE1hp
-  --print ("MONSTRUOS PARA EL ENTRENADOR 2")
-  let listaEntrenador2 = crearMonstruos csvEntrenador2 listaEspecies listaAtaques
-  let listaE2hp = asignarHP listaEntrenador2
-  --print $ listaE2hp
-  --print ("ATACAR")
-  --print $ fromJust (atacar 2 ((!!) listaE1hp 1))
-  --print ("CAMBIAR")
-  --print $ fromJust (cambiar 3 listaE1hp)
+  let listaEspecies = crearEspecies csvEspecies -- Se crea la lista de especies
+  let listaAtaques = crearAtaques csvAtaques    -- Se crea la lista de ataques
+  let listaEntrenador1 = crearMonstruos csvEntrenador1 listaEspecies listaAtaques -- Se crea la lista del entrenador1
+  let listaE1hp = asignarHP listaEntrenador1 -- Se asignan los maxHP a los monstruos del entrenador1
+  let listaEntrenador2 = crearMonstruos csvEntrenador2 listaEspecies listaAtaques -- Se crea la lista del entrenador2
+  let listaE2hp = asignarHP listaEntrenador2 -- Se asignan los maxHP a los monstruos del entrenador2
   print ("INFO")
   putStrLn $ info (listaE1hp !! 1)
   print ("AYUDA")
@@ -260,13 +263,15 @@ main = do
 
 --Flujo de la Batalla
 
-  --Valores iniciales de la batalla
-  --Se seleccionan los dos primeros monstruos pasados en los archivos para
-  --cada entrenador.
-  let monstruoAct1 = fromJust (cambiar 1 listaE1hp)
-  let monstruoAct2 = fromJust (cambiar 1 listaE2hp)
+  entrenador1 = Entrenador { pokemon = fromJust (cambiar 1 listaE1hp)
+                           , listaPokemones = listaE1hp
+                           , rendido = False }
   
-  batalla monstruoAct1 monstruoAct2 listaE1hp listaE2hp turnoEntrenador1 turnoEntrenador2
+  entrenador2 = Entrenador { pokemon = fromJust (cambiar 1 listaE2hp)
+                           , listaPokemones = listaE2hp
+                           , rendido = False }
+  
+  batalla entrenador1 entrenador2 turnoEntrenador1 turnoEntrenador2
   print("")
 
 
