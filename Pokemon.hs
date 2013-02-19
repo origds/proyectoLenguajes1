@@ -97,7 +97,7 @@ data Monstruo = Monstruo  {
   deriving (Eq, Read, Show)
 
 data Entrenador = Entrenador {
-  pokemon :: Monstruo,
+  activo :: Int,
   listaPokemones :: [Monstruo],
   rendido :: Bool
 }
