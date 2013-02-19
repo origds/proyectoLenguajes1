@@ -51,10 +51,6 @@ ayuda mons listaM = unlines
   [ "LISTA DE ATAQUES", "", imprimirAtaques (listarAtaque (ataques mons))
   ,"LISTA DE MONSTRUOS", "", imprimirMonstruos listaM ]
 
--- Funcion para asignar el pokemon actual al entrenador 
-
-actualPokemon :: Entrenador -> Monstruo -> Entrenador
-actualPokemon ent pok = ent { pokemon = pok }
 
 -- Funcion para rendirse
 
