@@ -5,6 +5,8 @@
 
 {-# LANGUAGE RecordWildCards #-}
 
+-- Modulo donde se definen todos los tipos y estructuras pokemon
+
 module Pokemon where
 
 import Data.List

@@ -1,4 +1,6 @@
--- Modulo donde se definen las funciones para la batalla pokemon
+{-# LANGUAGE RecordWildCards #-}
+
+ -- Modulo donde se definen las funciones para la batalla pokemon
 
 module Batalla where 
 
@@ -32,23 +34,32 @@ inconsciente mons
   | (hpactual mons) == 0 = True
   | otherwise = False
 
--- Funcion para cambiar de monstruo en la batalla
+-- Funcion para el monstruo a cambiar en la batalla
 
-cambiar :: Int -> [Monstruo] -> Maybe Monstruo
-cambiar n lista
+obtenerPokemon :: Int -> [Monstruo] -> Maybe Monstruo
+obtenerPokemon n lista
   | hpactual (lista !! (n-1)) == 0 = Nothing
   | otherwise = Just (lista !! (n-1))
   
+-- Funcion que cambia el pokemon activo de un entrenador
+
+cambiarPokemon :: Entrenador -> Int -> Maybe Entrenador
+cambiarPokemon e n = if inconsciente pokemon then Nothing
+                                             else Just e { activo = n-1 }
+  where 
+    pokemon = fromJust (obtenerPokemon n (listaPokemones e))
+
+pokemonActivo Entrenador {..} = listaPokemones !! activo
 -- Funcion para obtener informacion de un monstruo 
 
 info :: Monstruo -> String
-info monstruo = "POKEMON ACTUAL \n\n" ++ imprimirInfo monstruo
+info monstruo = "\n\nPOKEMON ACTUAL \n\n" ++ imprimirInfo monstruo
 
 -- Funcion para obtener la lista de ataques y la lista de monstruos
 
 ayuda :: Monstruo -> [Monstruo] -> String
 ayuda mons listaM = unlines
-  [ "LISTA DE ATAQUES", "", imprimirAtaques (listarAtaque (ataques mons))
+  [ "\n\nLISTA DE ATAQUES", "", imprimirAtaques (listarAtaque (ataques mons))
   ,"LISTA DE MONSTRUOS", "", imprimirMonstruos listaM ]
 
 
