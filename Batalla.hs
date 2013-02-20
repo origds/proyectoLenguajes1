@@ -50,6 +50,7 @@ cambiarPokemon e n = if inconsciente pokemon then Nothing
     pokemon = fromJust (obtenerPokemon n (listaPokemones e))
 
 pokemonActivo Entrenador {..} = listaPokemones !! activo
+
 -- Funcion para obtener informacion de un monstruo 
 
 info :: Monstruo -> String

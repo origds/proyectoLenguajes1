@@ -179,13 +179,13 @@ turno e1 e2 j = do
                                             else putStrLn $ "\nLa batalla ha finalizado! El " ++ show (elOtro j)
                                                  ++ " se ha rendido. El ganador es el " ++ show j ++ "!!!"
       Info t        -> if t == Yo then do
-                                        putStrLn $ info $ (listaPokemones jugadorActivo) !! (activo jugadorActivo)
+                                        putStrLn $ info $ pokemonActivo jugadorActivo
                                         turno e1 e2 j
                                   else do
-                                        putStrLn $ info $ (listaPokemones (elJugador (elOtro j) e1 e2)) !! (activo (elJugador (elOtro j) e1 e2))
+                                        putStrLn $ info $ pokemonActivo (elJugador (elOtro j) e1 e2)
                                         turno e1 e2 j
       Ayuda         -> do
-                        putStrLn $ ayuda ((listaPokemones jugadorActivo) !! (activo jugadorActivo)) (listaPokemones jugadorActivo)
+                        putStrLn $ ayuda (pokemonActivo jugadorActivo) (listaPokemones jugadorActivo)
                         turno e1 e2 j
   
 main :: IO()
