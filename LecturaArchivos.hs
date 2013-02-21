@@ -4,7 +4,6 @@
 import System.Environment
 import System.IO
 import System.Directory
-import System.Exit (exitSuccess)
 import Control.Monad
 import Data.List
 import Data.Functor
@@ -114,12 +113,19 @@ parsearTipoInfo s = case s of
   _       -> Nothing
 
 data Accion
-  = Atacar Ataque
+  = Atacar Int
   | Cambiar Int 
   | Rendirse
   | Info TipoInfo
   | Ayuda
   deriving (Eq, Read, Show)
+
+data Estado
+ = Estado
+   { e1, e2 :: Entrenador
+   , aQuienLeToca :: Jugador
+   }
+ deriving (Eq, Read, Show)
 
 parsearAccion :: Entrenador -> String -> Maybe Accion
 parsearAccion Entrenador {..} s =
@@ -127,7 +133,7 @@ parsearAccion Entrenador {..} s =
     ["info", p]    -> Info <$> parsearTipoInfo p
     ["ayuda"]      -> Just Ayuda
     ["cambiar", n] -> Just $ Cambiar (read n)
-    ["atacar", n]  -> Atacar <$> atacar (read n) ( pokemonActivo Entrenador {..})
+    ["atacar", n]  -> Just $ Atacar  (read n)
     ["rendirse"]   -> Just Rendirse
     _ -> Nothing
 
@@ -158,7 +164,30 @@ turno e1 e2 j = do
       putStrLn $ "\nLa accion indicada no es valida, ingresa otra accion " ++ show j
       turno e1 e2 j
     Just a -> case a of 
-      Atacar ataque -> undefined
+      Atacar n -> do
+                    if inconsciente (pokemonActivo jugadorActivo) 
+                      then do
+                        putStrLn $ "Tu pokemon esta inconsciente, " ++ show j ++ ". Debes cambiarlo antes de atacar!"
+                        turno e1 e2 j
+                      else do 
+                        let defensor = elJugador (elOtro j) e1 e2
+                        case atacar n (pokemonActivo jugadorActivo) of
+                          Nothing -> do
+                                      putStrLn $ "\nEl ataque tiene pp 0 debes escoger otro, " ++ show j ++ "!"
+                                      turno e1 e2 j
+                          Just atake -> do
+                                      let
+                                        pokemon = pokemonActivo jugadorActivo
+                                        daño = dañoAtaque pokemon (pokemonActivo defensor) atake
+                                        nuevoDefensor = nuevoHp defensor daño
+                                        pp = actualizarPP pokemon n
+                                        ataquepp = actualizarAtaque pokemon n (listarAtaque $ ataques pokemon) pp
+                                        nuevoAtacante = actualizarEntrenador ataquepp jugadorActivo n
+                                        (e1Nuevo, e2Nuevo) = cambialos e1 e2 j nuevoAtacante
+                                        (e1Viejo, e2Viejo) = cambialos e1 e2 (elOtro j) nuevoDefensor
+                                      turno e1Nuevo e2Nuevo (elOtro j)
+                                      
+
       Cambiar n     -> do 
                         if (activo jugadorActivo)+1 == n 
                           then do

@@ -138,7 +138,7 @@ obtenerTipo :: Eq a => Either a (a,a) -> [a]
 obtenerTipo (Right(a,b)) =  nub [a,b]
 obtenerTipo (Left a) = [a]
 
---Funcion que permite obtener los ataques de un monstruo (usar lengtn y (!!) para obtener valores (a,b) y luego fst y snd)
+--Funcion que permite obtener los ataques de un monstruo (usar length y (!!) para obtener valores (a,b) y luego fst y snd)
 listarAtaque :: ((a,b),Maybe(a,b),Maybe(a,b),Maybe(a,b)) -> [(a,b)]
 listarAtaque ((a,b),a2, a3, a4) = (a,b) : catMaybes [a2,a3,a4]
 

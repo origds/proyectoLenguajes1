@@ -20,13 +20,41 @@ atacar n mons
     where
       atack = (listarAtaque (ataques mons)) !! (n-1)
 
+actualizarPP :: Monstruo -> Int -> (Ataque,Int)
+actualizarPP poke n = (fst (losataques  !! (n-1)), ppnuevo)
+  where
+    losataques = listarAtaque $ ataques poke
+    ppnuevo = snd (losataques  !! (n-1))-1
+
+actualizarAtaque :: Monstruo -> Int -> [(Ataque,Int)] -> (Ataque,Int) -> Monstruo 
+actualizarAtaque mon n l t = mon { ataques = tuplificar4 $ map Just listaNueva ++ repeat Nothing }
+  where
+    listaNueva = insertar t l n
+    tuplificar4 (a:b:c:d:_) = (fromJust a, b, c, d)
+
+actualizarEntrenador :: Monstruo -> Entrenador -> Int -> Entrenador
+actualizarEntrenador mon ent n = ent { listaPokemones = listaactual }
+  where
+    listaactual = insertar mon (listaPokemones ent) n 
+
+-- Funcion que inserta un nuevo pokemon en la listaPokemon
+
+insertar :: a -> [a] -> Int -> [a]
+insertar elemento lista n = lista1 ++ [elemento] ++ snd separar 
+  where
+    separar = splitAt n lista
+    lista1 = take (n-1) (fst separar)
+
 -- Funcion que aplica el daño a un pokemon
 
-nuevoHp :: Monstruo -> Double -> Monstruo
-nuevoHp defensor daño = 
-  defensor { hpactual = if ((hpactual defensor) - (floor daño)) < 0 then 0
-                                                                else (hpactual defensor) - (floor daño)}
-
+nuevoHp :: Entrenador -> Double -> Entrenador
+nuevoHp defensor daño = do
+  let nuevoPokemon = (pokemonActivo defensor) { hpactual = if ((hpactual $ pokemonActivo defensor) - (floor daño)) < 0 
+                                                          then 0
+                                                          else (hpactual $ pokemonActivo defensor) - (floor daño) }
+  let listanuevo = insertar nuevoPokemon (listaPokemones defensor) (activo defensor)
+  defensor { listaPokemones = listanuevo }
+  
 -- Funcion que verifica que un pokemon este inconsciente
 
 inconsciente :: Monstruo -> Bool
