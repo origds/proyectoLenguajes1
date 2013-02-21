@@ -1,1 +1,1 @@
-add: ; cabal install
+all: ; cabal install
