@@ -203,55 +203,106 @@ atacar j n= do
     (ent1,ent2) = case j of
       Primero -> (e1 estado, e2 estado)
       Segundo -> (e2 estado, e1 estado)
-      
-  case inconsciente $ pokemonActivo ent1 of
+  
+  case inconsciente $ pokemonActivo ent2 of
     True -> do
       lift $ putStrLn $ "\nEl pokemon tiene hpactual 0!! Debes escoger otro pokemon "
-                        ++ show j ++ "!"
-      tomaYDame $ \ estado -> case j of
+                        ++ show (elOtro j) ++ "!\n"
+      tomaYDame $ \ estado -> case (elOtro j) of
         Primero -> estado { a1 = Nothing }
         Segundo -> estado { a2 = Nothing }
-      turno   
-    False -> case atacarPokemon n (pokemonActivo ent1) of
-              Nothing -> lift $ putStrLn $ "\nEl ataque tiene pp 0 debes escoger otro, "
-                                            ++ show j ++ "!"
-              Just atake -> do
-                let
-                  pokemon = pokemonActivo ent1
-                  daño = dañoAtaque pokemon (pokemonActivo ent2) atake
-                  nuevoDefensor = nuevoHp ent2 daño
-                case inconsciente $ pokemonActivo nuevoDefensor of
-                    True -> do
-                      lift $ putStrLn $ "\nEl ataque fue super efectivo!! Debes escoger otro pokemon " 
-                                        ++ show (elOtro j) ++ "!"
-                      tomaYDame $ \ estado -> case (elOtro j) of
-                        Primero -> 
-                          estado 
-                            { e1 = actualizarPP ent1 (n-1)
-                            , e2 = nuevoDefensor
-                            , a1 = Nothing 
-                            }
-                        Segundo -> 
-                          estado 
-                            { e2 = actualizarPP ent1 (n-1)
-                            , e1 = nuevoDefensor
-                            , a2 = Nothing 
-                            }
-                      turno
-                    False -> 
-                      tomaYDame $ \ estado -> case j of
-                        Primero -> 
-                          estado 
-                            { e1 = actualizarPP ent1 (n-1)
-                            , e2 = nuevoDefensor
-                            , a1 = Just Listo 
-                            }                
-                        Segundo -> 
-                          estado 
-                            { e2 = actualizarPP ent1 (n-1)
-                            , e1 = nuevoDefensor
-                            , a2 = Just Listo 
-                            }                
+      turno  
+    False -> 
+      case inconsciente $ pokemonActivo ent1 of
+        True -> do
+          lift $ putStrLn $ "\nEl pokemon tiene hpactual 0!! Debes escoger otro pokemon "
+                            ++ show j ++ "!\n"
+          tomaYDame $ \ estado -> case j of
+            Primero -> estado { a1 = Nothing }
+            Segundo -> estado { a2 = Nothing }
+          turno   
+        False -> 
+          case atacarPokemon n (pokemonActivo ent1) of
+            Nothing -> do
+              lift $ putStrLn $ "\nEl ataque tiene pp 0 debes escoger otro, "
+                                ++ show j ++ "!\n"
+              tomaYDame $ \ estado -> case j of
+                Primero -> estado { a1 = Nothing }
+                Segundo -> estado { a2 = Nothing }
+              turno 
+            Just atake -> do
+              let
+                pokemon = pokemonActivo ent1
+                pokemon2 = pokemonActivo ent2
+                daño = dañoAtaque pokemon pokemon2 atake
+                nuevoDefensor = nuevoHp ent2 daño
+              lift $ putStrLn $ "\nEl pokemon " ++ sobrenombre pokemon 
+                                ++ " ataco al pokemon " ++ sobrenombre pokemon2 
+                                ++ " con " ++ nombreAt atake
+                                ++ " causandole " ++ show (floor daño) ++ " de daño!!!\n"  
+              case inconsciente $ pokemonActivo nuevoDefensor of
+                  True -> do
+                    lift $ putStrLn $ "\nEl ataque fue super efectivo!!\n"
+                    tomaYDame $ \ estado -> case (elOtro j) of
+                      Primero -> 
+                        estado 
+                          { e2 = actualizarPP ent1 (n-1)
+                          , e1 = nuevoDefensor
+                          , a1 = Nothing
+                          , a2 = Nothing 
+                          }
+                      Segundo -> 
+                        estado 
+                          { e1 = actualizarPP ent1 (n-1)
+                          , e2 = nuevoDefensor
+                          , a1 = Nothing
+                          , a2 = Nothing 
+                          }
+                    finBatalla $ elOtro j
+                    lift $ putStrLn $ "\nDebes escoger otro pokemon " ++ show (elOtro j) ++ "!\n"
+                    turno
+                  False -> 
+                    tomaYDame $ \ estado -> case j of
+                      Primero -> 
+                        estado 
+                          { e1 = actualizarPP ent1 (n-1)
+                          , e2 = nuevoDefensor
+                          , a1 = Just Listo 
+                          }                
+                      Segundo -> 
+                        estado 
+                          { e2 = actualizarPP ent1 (n-1)
+                          , e1 = nuevoDefensor
+                          , a2 = Just Listo 
+                          }                
+                          
+finBatalla :: Jugador -> Batalla ()
+finBatalla j = do
+  ent1 <- dameEl e1
+  ent2 <- dameEl e2
+  accion1 <- dameEl a1
+  accion2 <- dameEl a2
+  case j of
+    Primero -> do
+      let inconscientes = and $ map inconsciente (listaPokemones ent1)
+      case inconscientes of
+        True -> lift $ do
+          putStrLn $ "\nEl Entrenador 1 ha perdido!, todos sus pokemones estan inconscientes"
+                     ++ "\nEl ganador es el Entrenador 2!!!"
+          putStrLn "\n\n¡¡¡FIN DE LA BATALLA POKEMON!!!"
+          exitSuccess
+        False -> return ()
+
+    Segundo -> do
+      let inconscientes = and $ map inconsciente (listaPokemones ent2)
+      case inconscientes of
+        True -> lift $ do
+          putStrLn $ "\nEl Entrenador 2 ha perdido!, todos sus pokemones estan inconscientes"
+                     ++ "\nEl ganador es el Entrenador 1!!!"
+          putStrLn "\n\n¡¡¡FIN DE LA BATALLA POKEMON!!!"           
+          exitSuccess
+        False -> return ()
+  
 
 --turno: Funcion que maneja el flujo de la batalla
 turno :: Batalla ()
@@ -287,13 +338,16 @@ turno = do
     (Just a1', Just a2') -> do
       case (a1', a2') of
         (Rendirse, Rendirse) -> lift $ do
-          putStrLn "Hubo un empate!!!" 
+          putStrLn "\nHubo un empate!!!"
+          putStrLn "\n\n¡¡¡FIN DE LA BATALLA POKEMON!!!"
           exitSuccess
         (Rendirse, _) -> lift $ do
           putStrLn $ "\nLa batalla ha finalizado! El Entrenador 1 se ha rendido. El ganador es el Entrenador 2!!!"
+          putStrLn "\n\n¡¡¡FIN DE LA BATALLA POKEMON!!!"
           exitSuccess
         (_, Rendirse) -> lift $ do
           putStrLn $ "\nLa batalla ha finalizado! El Entrenador 2 se ha rendido. El ganador es el Entrenador 1!!!"
+          putStrLn "\n\n¡¡¡FIN DE LA BATALLA POKEMON!!!"
           exitSuccess
         (Cambiar n, _) ->  do 
           cambiar Primero n
@@ -309,12 +363,26 @@ turno = do
             maxVel = 
               maximumBy (comparing $ actualVel . pokemonActivo . dameElEntrenador) [Primero,Segundo]
           case maxVel of
-            Primero -> do
-              atacar Primero n
-              atacar Segundo m
-            Segundo -> do
-              atacar Segundo m
-              atacar Primero n
+            Primero -> 
+              case inconsciente $ pokemonActivo ent1 of
+                True -> do 
+                  lift $ putStrLn $ "\nEl pokemon tiene hpactual 0!! Debes escoger otro pokemon "
+                                    ++ show Primero ++ "!\n"
+                  tomaYDame $ \ estado -> estado { a1 = Nothing }
+                  turno   
+                False -> do
+                  atacar Primero n
+                  atacar Segundo m
+            Segundo -> 
+              case inconsciente $ pokemonActivo ent2 of
+                True -> do 
+                  lift $ putStrLn $ "\nEl pokemon tiene hpactual 0!! Debes escoger otro pokemon "
+                                    ++ show Segundo ++ "!\n"
+                  tomaYDame $ \ estado -> estado { a2 = Nothing }
+                  turno   
+                False -> do
+                  atacar Segundo m
+                  atacar Primero n
         (Atacar n, _) -> atacar Primero n
         (_, Atacar n) -> atacar Segundo n
         (Listo, Listo) -> do
@@ -323,13 +391,13 @@ turno = do
       lift $ putStrLn $ "Entrenador 1 ingresa una accion!"
       accion <- lift getLine
       case parsearAccion ent1 accion of
-        Nothing -> lift $ putStrLn $ "\nLa accion indicada no es valida, ingresa otra accion Entrenador 1"
+        Nothing -> lift $ putStrLn $ "\nLa accion indicada no es valida, ingresa otra accion Entrenador 1\n"
         Just a -> tomaYDame $ \ estado -> estado { a1 = Just a }
     (_, Nothing) -> do
       lift $ putStrLn $ "Entrenador 2 ingresa una accion!"
       accion <- lift getLine
       case parsearAccion ent2 accion of
-        Nothing -> lift $ putStrLn $ "\nLa accion indicada no es valida, ingresa otra accion Entrenador 2"
+        Nothing -> lift $ putStrLn $ "\nLa accion indicada no es valida, ingresa otra accion Entrenador 2\n"
         Just a -> tomaYDame $ \ estado -> estado { a2 = Just a }
       
   turno    
@@ -356,8 +424,21 @@ main = do
   -- Se asignan los maxHP a los monstruos del entrenador2
   let listaE2hp = asignarHP listaEntrenador2 
   
-  putStrLn "¡¡¡BATALLA POKEMON!!!\n\n"
-  
+  putStrLn $ 
+    unlines 
+      [""
+      ,"¡¡¡QUE COMIENCE LA BATALLA POKEMON!!!"
+      ,""
+      ,""
+      , "Acciones: "
+      ,""
+      , "1. atacar n: n indica el numero del ataque a usar."
+      , "2. cambiar n: n indica el numero del pokemon a cambiar"
+      , "3. info yo | rival: da la informacion del entrenador o de su rival"
+      , "4. ayuda: muestra los ataques del pokemon actual y los pokemones del entrenador"
+      , "5. rendirse"
+      ]
+
 --Flujo de la Batalla
 
   let 
@@ -381,7 +462,5 @@ main = do
       , a2 = Nothing }
                       
   correrBatalla estadoInicial turno
-  
-  putStrLn "\n\n¡¡¡FIN DE LA BATALLA POKEMON!!!"
 
 
