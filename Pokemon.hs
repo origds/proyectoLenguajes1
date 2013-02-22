@@ -43,16 +43,20 @@ data Relacion = Relacion { efectivos, debiles, inmunes :: [Tipo] }
 
 relacionAtaqueTipo :: Tipo -> Relacion
 relacionAtaqueTipo x = case x of
-  Bug      -> Relacion [Grass, Psychic, Dark] [Fighting, Flying, Poison, Ghost, Steel, Fire] []
+  Bug      -> Relacion [Grass, Psychic, Dark] [Fighting, Flying, Poison, Ghost
+                        , Steel, Fire] []
   Dark     -> Relacion [Ghost, Psychic] [Fighting, Steel, Dark] []
   Dragon   -> Relacion [Dragon] [Steel] []
   Electric -> Relacion [Flying, Water] [Grass, Electric, Dragon] [Ground]
-  Fighting -> Relacion [Normal, Rock, Steel, Ice, Dark] [Flying, Poison, Bug, Psychic] [Ghost]
+  Fighting -> Relacion [Normal, Rock, Steel, Ice, Dark] [Flying, Poison, Bug
+                        , Psychic] [Ghost]
   Fire     -> Relacion [Bug, Steel, Grass, Ice] [Rock, Fire, Water, Dragon] []
   Flying   -> Relacion [Fighting, Bug, Grass] [Rock,Steel, Electric] []
   Ghost    -> Relacion [Ghost, Psychic] [Steel, Dark] [Normal]
-  Grass    -> Relacion [Ground, Rock, Water] [Flying, Poison, Bug, Steel, Fire, Grass, Dragon] []
-  Ground   -> Relacion [Poison, Rock, Steel, Fire, Electric] [Bug, Grass] [Flying]
+  Grass    -> Relacion [Ground, Rock, Water] [Flying, Poison, Bug, Steel, Fire
+                        , Grass, Dragon] []
+  Ground   -> Relacion [Poison, Rock, Steel, Fire, Electric] [Bug, Grass]
+                        [Flying]
   Ice      -> Relacion [Flying, Ground, Grass, Dragon] [Steel,Fire, Water] []
   Normal   -> Relacion [] [Rock, Steel] [Ghost]
   Poison   -> Relacion [Grass] [Poison, Ground, Rock, Ghost] [Steel]
@@ -192,4 +196,3 @@ dañoAtaque atacante defensor ataq =
         $  [2.0 | t <- tiposDefensor, t ∈ efectivos]
         ++ [0.5 | t <- tiposDefensor, t ∈ debiles  ]
         ++ [0.0 | t <- tiposDefensor, t ∈ inmunes  ]
-  

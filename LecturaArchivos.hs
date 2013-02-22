@@ -13,8 +13,6 @@
 module LecturaArchivos where
 
 -- Modulo donde se encuentran las funciones para la lectura de archivos
-import System.Environment
-import System.Exit
 import System.IO
 import System.Directory
 import Control.Monad
@@ -98,16 +96,20 @@ crearMonstruos csv listaEspecies listaAtaques =
               , sobrenombre = b
               , nivel = read c
               , hpactual = 0
-              , ataques = ((fromJust $ elAtaque d , pp $ fromJust $ elAtaque d), 
-                          if (e == "") 
-                            then Nothing 
-                            else Just (fromJust $ elAtaque e, pp $ fromJust $ elAtaque e ),
-                          if (f == "") 
-                            then Nothing 
-                            else Just (fromJust $ elAtaque f, pp $ fromJust $ elAtaque f ),
-                          if (g == "") 
-                            then Nothing 
-                            else Just (fromJust $ elAtaque g, pp $ fromJust $ elAtaque g )) 
+              , ataques = 
+                  ((fromJust $ elAtaque d , pp $ fromJust $ elAtaque d), 
+                    if (e == "") 
+                      then Nothing 
+                      else 
+                        Just (fromJust $ elAtaque e, pp $ fromJust $ elAtaque e ),
+                    if (f == "") 
+                      then Nothing 
+                      else 
+                        Just (fromJust $ elAtaque f, pp $ fromJust $ elAtaque f ),
+                    if (g == "") 
+                      then Nothing 
+                      else
+                        Just (fromJust $ elAtaque g, pp $ fromJust $ elAtaque g )) 
           }
                           
       elAtaque :: String -> Maybe Ataque

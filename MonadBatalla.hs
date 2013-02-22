@@ -25,22 +25,30 @@ data Accion
   deriving (Eq, Read, Show)
 
 --Jugador: Primero corresponde al entrenador 1
---         Sgundo corresponde a entrenador 2
+--         Segundo corresponde a entrenador 2
 data Jugador
   = Primero
   | Segundo
   deriving (Eq, Read, Bounded, Enum)
+  
+-- Instancia que deifne el show de un jugador  
+instance Show Jugador where
+  show Primero = "Entrenador 1"
+  show Segundo = "Entrenador 2"
 
---TioInfo: Yo retorna la info acerca de los datos del entrenador que introdujo la accion
---         Rival Yo retorna la info acerca de los datos del otro entrenador que introdujo la accion
+--TioInfo: Yo retorna la info acerca de los datos del entrenador que 
+--         introdujo la accion
+--         Rival Yo retorna la info acerca de los datos del otro entrenador 
+--         que introdujo la accion
 data TipoInfo
   = Yo 
   | Rival
   deriving (Show, Eq, Read, Bounded, Enum)
 
 --Estado: Represena un estado de la batalla para un determinado momento
---Cada estado de una batalla tiene dos entrenadores, un jugador que representa al entrenador
---que esta realizando la accion y las dos acciones de cada jugador para el momento
+--Cada estado de una batalla tiene dos entrenadores, un jugador que representa 
+--al entrenador que esta realizando la accion y las dos acciones de cada
+--jugador para el momento
 data Estado
   = Estado
     { e1, e2 :: Entrenador
@@ -48,11 +56,12 @@ data Estado
     , a1, a2 :: Maybe Accion
     }
 
---Tipo Batalla: Cada batalla de tipo a esta representada por una "caja" que dado un estado 
---se obtiene un IO de ese estado junto a ese a 
+--Tipo Batalla: Cada batalla de tipo a esta representada por una
+--"caja" que dado un estado se obtiene un IO de ese estado junto a ese 'a'
 newtype Batalla a = B (Estado -> IO (Estado, a))
 
---mandaALaGuerra: Esta funcion actua como la funcion de return para el MonadBatalla
+--mandaALaGuerra: Esta funcion actua como la funcion de return para el 
+--MonadBatalla
 mandaALaGuerra :: a -> Batalla a
 mandaALaGuerra a = B $ \ estadoInicial -> return (estadoInicial, a)
 
@@ -78,7 +87,8 @@ dame :: Batalla Estado
 dame = B $ \ estadoInicial -> return (estadoInicial, estadoInicial)
 
 dameEl :: (Estado -> a) -> Batalla a
-dameEl unaProyección = B $ \ estadoInicial -> return (estadoInicial, unaProyección estadoInicial)
+dameEl unaProyección = 
+  B $ \ estadoInicial -> return (estadoInicial, unaProyección estadoInicial)
 
 toma :: Estado -> Batalla ()
 toma estadoNuevo = B $ \ estadoInicial -> return (estadoNuevo, ())
