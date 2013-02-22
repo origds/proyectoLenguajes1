@@ -1,11 +1,14 @@
--- Proyecto #1. Haskell 
--- Relizado por: Oriana Gomez 09-10336
---               Carla Urrea 09-11215
--- Fecha: 31/01/2013
-
 {-# LANGUAGE RecordWildCards #-}
 
--- Modulo donde se definen todos los tipos y estructuras pokemon
+{-Modulo Pokemon: En este modulo se definen las funciones y tipos necesarios para
+  la creacion de pokemones y sus entrenadores.
+  
+  Autores: 
+    Carla Urrea 09-11215
+    Oriana Gomez 09-10336
+    
+  Fecha de Ultima Modificacion: 22/02/2013
+-}
 
 module Pokemon where
 
@@ -58,7 +61,7 @@ relacionAtaqueTipo x = case x of
   Steel    -> Relacion [Rock, Ice] [Steel, Fire, Water, Electric] []
   Water    -> Relacion [Ground, Rock, Fire] [Water, Grass, Dragon] []
 
--- Se define el tipo Estadisticas, Especie, Ataque, Monstruo
+-- Se define el tipo Estadisticas, Especie, Ataque, Monstruo y Entrenador
 
 data Estadisticas = Estadisticas  {
   hp :: Int,
@@ -107,14 +110,17 @@ data Entrenador = Entrenador {
 
 --Funciones base a definir para obtener las estadisticas actuales
 
+--maxHp: permite obtener el maximo hp de un monstruo.
 maxHp :: Monstruo -> Int
 maxHp (Monstruo {..}) = 
   (div ((31 + (2*hp(estadEsp especie)) + div 255 4 + 100)*nivel) 100) + 10
 
+--actualAt: permite obtener el ataque actual de un monstruo.
 actualAt :: Monstruo -> Int
 actualAt (Monstruo {..}) = 
   (div ((31 + 2*ataque(estadEsp especie) + div 255 4)*nivel) 100) + 5
 
+--actualDef: permite obtener el maximo hp de un monstruo.
 actualDef :: Monstruo -> Int
 actualDef (Monstruo {..}) = 
   (div ((31 + 2*defensa(estadEsp especie) + div 255 4)*nivel) 100) + 5
@@ -127,22 +133,24 @@ actualDefE :: Monstruo -> Int
 actualDefE (Monstruo {..}) = 
   (div ((31 + 2*defensaEsp(estadEsp especie) + div 255 4)*nivel) 100) + 5
   
+--actualVel: permite obtener la velocidad actual de un pokemon
 actualVel :: Monstruo -> Int
 actualVel (Monstruo {..}) = 
   (div ((31 + 2*velocidad(estadEsp especie) + div 255 4)*nivel) 100) + 5
   
 -- Funciones auxiliares
 
--- Funcion que permite obtener los tipos de un pokemon (usar fst y snd para obtener valores)
+--obtenerTipo: Funcion que permite obtener los tipos de un pokemon usar
 obtenerTipo :: Eq a => Either a (a,a) -> [a]
 obtenerTipo (Right(a,b)) =  nub [a,b]
 obtenerTipo (Left a) = [a]
 
---Funcion que permite obtener los ataques de un monstruo (usar length y (!!) para obtener valores (a,b) y luego fst y snd)
-listarAtaque :: ((a,b),Maybe(a,b),Maybe(a,b),Maybe(a,b)) -> [(a,b)]
-listarAtaque ((a,b),a2, a3, a4) = (a,b) : catMaybes [a2,a3,a4]
+--listarAtaques: Funcion que permite obtener los ataques de un monstruo 
+--(usar length y (!!) para obtener valores (a,b) y luego fst y snd)
+listarAtaques :: ((a,b),Maybe(a,b),Maybe(a,b),Maybe(a,b)) -> [(a,b)]
+listarAtaques ((a,b),a2, a3, a4) = (a,b) : catMaybes [a2,a3,a4]
 
---Funcion a definir para calcular el daño de un ataque 
+--danoAtaque: Funcion a definir para calcular el daño de un ataque 
 
 (∈) = elem
 
@@ -150,13 +158,17 @@ dañoAtaque :: Monstruo -> Monstruo -> Ataque -> Double
 dañoAtaque atacante defensor ataq = 
   daño (nivel atacante) (fromIntegral $ poderAtaque ataq) (ataque') (defensa') modificador
     where
-      (ataque', defensa') = if fisico ataq then ((actualAt atacante), (actualDef defensor))
-                                           else ((actualAtE atacante), (actualDefE defensor))
+      (ataque', defensa') = 
+         if fisico ataq 
+            then ((actualAt atacante), (actualDef defensor))
+            else ((actualAtE atacante), (actualDefE defensor))
 
-      daño nivel poder ataque defensa modificador = ((nivelAjustado*poder*proporcion / 50) + 2)* modificador
+      daño nivel poder ataque defensa modificador = 
+        ((nivelAjustado*poder*proporcion / 50) + 2)* modificador
         where
           proporcion = fromIntegral ataque / fromIntegral defensa
-          nivelAjustado = (fromIntegral nivel * fromIntegral 2 / fromIntegral 5) + fromIntegral 2
+          nivelAjustado = 
+            (fromIntegral nivel * fromIntegral 2 / fromIntegral 5) + fromIntegral 2
 
       modificador :: Double
       modificador = modifAtacante * modifDefensor
@@ -180,15 +192,4 @@ dañoAtaque atacante defensor ataq =
         $  [2.0 | t <- tiposDefensor, t ∈ efectivos]
         ++ [0.5 | t <- tiposDefensor, t ∈ debiles  ]
         ++ [0.0 | t <- tiposDefensor, t ∈ inmunes  ]
-        
--- main :: IO()
--- main = do
---   let esp1 = Especie {catalogo=17,nombreEsp="Charizard",tipoPokemon=Right(Fire,Flying),estadEsp= Estadisticas {hp=78,ataque=84,defensa=78,ataqueEsp=109,defensaEsp=85,velocidad=100},prevolucion=155,evolucion="Charizord"}
---   let esp = Especie {catalogo=17,nombreEsp="Kabutops",tipoPokemon=Right(Rock,Water),estadEsp= Estadisticas {hp=60,ataque=115,defensa=105,ataqueEsp=65,defensaEsp=70,velocidad=80},prevolucion=155,evolucion="Kabutopsi"}
---   let ataq1 = Ataque {nombreAt="Body Slam",tipo=Normal,fisico=True,pp=15,poderAtaque=85}
---   let ataq2 = Ataque {nombreAt="Absorb",tipo=Grass,fisico=False,pp=20,poderAtaque=20}
---   let ataq3 = Ataque {nombreAt="Water Gun",tipo=Water,fisico=False,pp=25,poderAtaque=40}
---   let ataq4 = Ataque {nombreAt="Rock Throw",tipo=Rock,fisico=True,pp=15,poderAtaque=50}
---   let monAtacante = Monstruo {especie=esp,sobrenombre="atacante",nivel=60,hpactual=198,ataques=((ataq1,10),Just (ataq2,20),Just (ataq3,12), Just(ataq4,20))}
---   let monDefensor = Monstruo {especie=esp1,sobrenombre="defensor",nivel=70,hpactual=198,ataques=((ataq1,10),Just (ataq2,20),Just (ataq3,12), Just(ataq4,20))}
   
