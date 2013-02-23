@@ -11,10 +11,8 @@
 -}
 module Batalla where 
 
-import Control.Monad
 import Data.Data
 import Data.List
-import qualified Data.Map as M
 import Data.Maybe
 
 import MonadBatalla

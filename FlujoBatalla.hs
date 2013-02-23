@@ -13,7 +13,6 @@
 import System.Environment
 import System.Exit
 import System.IO
-import System.Directory
 import Control.Monad
 import Data.List
 import Data.Functor

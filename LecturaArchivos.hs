@@ -14,10 +14,7 @@ module LecturaArchivos where
 
 -- Modulo donde se encuentran las funciones para la lectura de archivos
 import System.IO
-import System.Directory
-import Control.Monad
 import Data.List
-import Data.Functor
 import Data.List.Split
 import qualified Data.Map as M
 import Data.Maybe
